@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance List</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        list-style-type: none;
+        text-decoration: none;
+      }
+      nav {
+        width: 100vw;
+        height: 70px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #223656;
+        color: #fff;
+        padding-inline: 20px;
+      }
+      .left img {
+        border-radius: 50%;
+        height: 50px;
+        width: 50px;
+      }
+      .right ul {
+        display: flex;
+        gap: 20px;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, sans-serif;
+        color: #222;
+      }
+      h1 {
+        margin: 0 0 16px;
+        font-size: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid #555;
+        padding: 8px 10px;
+      }
+      thead th {
+        background: #f4f4f4;
+        text-align: left;
+      }
+      caption {
+        caption-side: bottom;
+        text-align: left;
+        padding-top: 8px;
+        color: #555;
+        font-size: 14px;
+      }
+      .center {
+        text-align: center;
+      }
+
+      .totals {
+        font-weight: 600;
+        background: #f4f4f4;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      .session-cell.participated {
+        background: #e7f6e7;
+      }
+
+      .report-btn {
+        background: #223656;
+        color: #fff;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 10px 0 16px;
+      }
+
+      #reportSection {
+        border: 1px solid #d0d7de;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 12px;
+        background: #f8fafc;
+      }
+      #reportSection h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+      #reportList {
+        padding-left: 18px;
+      }
+      #reportList li {
+        margin: 4px 0;
+      }
+
+      /* Row highlighting based on absences */
+      tbody tr.abs-low {
+        background: #e6f4ea; /* green-ish */
+      }
+      tbody tr.abs-mid {
+        background: #fff7cc; /* yellow */
+      }
+      tbody tr.abs-high {
+        background: #ffd6d6; /* red */
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="left">
+        <img
+          src="https://scontent.falg1-2.fna.fbcdn.net/v/t39.30808-6/450160642_446636948221828_7355207663232850990_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeFSvJKo3TCcJtv0vjq7Nzj8Es_e8psi6NoSz97ymyLo2kfVK2JW4c-bb9GVbik3VqLKlGTWTpHtp4b1Sf_IGOYV&_nc_ohc=ANJUCurMxvYQ7kNvwGHLoW0&_nc_oc=AdlG-az1k4UggVUepUnkJbCfz5kXY_S5fg-O6P8esl4QhHLfxf5YgWy0EhuLRIXQbRk&_nc_zt=23&_nc_ht=scontent.falg1-2.fna&_nc_gid=WwKWxqQFBA5mD9joZ48f5g&oh=00_AfhaodpossUkjHy2g63naz9OPWW6A5gunNUJSGq32aoLQw&oe=6917DCBA"
+          alt="Logo-Faculty"
+        />
+      </div>
+      <div class="right">
+        <ul>
+          <li><a href="home.html">Home</a></li>
+          <li><a href="attendance.html">Attendance List</a></li>
+          <li><a href="add.html">Add Student</a></li>
+          <li><a href="reports.html">Reports</a></li>
+          <li><a href="#">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container">
+    <h1>Student Attendance</h1>
+    <button id="showReportBtn" class="report-btn">Show Report</button>
+    <table aria-label="Student attendance list">
+      <caption>
+        Each row contains the information of one student.
+      </caption>
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Last Name</th>
+          <th>First Name</th>
+          <th>Course</th>
+          <th class="center">S1</th>
+          <th class="center">S2</th>
+          <th class="center">S3</th>
+          <th class="center">S4</th>
+          <th class="center">S5</th>
+          <th class="center">S6</th>
+          <th>Absences</th>
+          <th>Participation</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody id="attendance-body">
+        <tr>
+          <td>2025001</td>
+          <td>Ahmed</td>
+          <td>Sara</td>
+          <td>CS101</td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="totals absences center">0 Abs</td>
+          <td class="totals participation center">0 Par</td>
+          <td class="center message">—</td>
+        </tr>
+        <tr>
+          <td>2025002</td>
+          <td>Yacine</td>
+          <td>Ali</td>
+          <td>CS101</td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
+          <td class="totals absences center">0 Abs</td>
+          <td class="totals participation center">0 Par</td>
+          <td class="center message">Great participation</td>
+        </tr>
+        <tr>
+          <td>2025003</td>
+          <td>Houcine</td>
+          <td>Rania</td>
+          <td>CS101</td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
+          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
+          <td class="totals absences center">0 Abs</td>
+          <td class="totals participation center">0 Par</td>
+          <td class="center message">Needs improvement</td>
+        </tr>
+      </tbody>
+    </table>
+    <section id="reportSection" hidden>
+      <h2>Attendance Report</h2>
+      <ul id="reportList"></ul>
+    </section>
+    </div>
+    <script>
+      // Single checkbox per session: click = presence; double-click = presence + participation
+      function updateRowTotals(row) {
+        const sessionChecks = row.querySelectorAll('input[data-type="session"]');
+        const absEl = row.querySelector('.absences');
+        const parEl = row.querySelector('.participation');
+        const msgEl = row.querySelector('.message');
+        const presentCount = Array.from(sessionChecks).filter(c => c.checked).length;
+        const participateCount = Array.from(sessionChecks).filter(c => c.dataset.participated === 'true').length;
+        const totalSessions = sessionChecks.length; // 6
+        const absences = totalSessions - presentCount;
+        if (absEl) absEl.textContent = `${absences} Abs`;
+        if (parEl) parEl.textContent = `${participateCount} Par`;
+
+        // Apply row highlight based on absences
+        row.classList.remove('abs-low', 'abs-mid', 'abs-high');
+        if (absences < 3) {
+          row.classList.add('abs-low');
+        } else if (absences <= 4) {
+          row.classList.add('abs-mid');
+        } else {
+          row.classList.add('abs-high');
+        }
+
+        // Compose message according to rules
+        let message = '';
+        if (absences >= 5) {
+          message = 'Excluded – too many absences – You need to participate more';
+        } else if (absences < 3 && participateCount >= 4) {
+          message = 'Good attendance – Excellent participation';
+        } else {
+          message = 'Warning – attendance low – You need to participate more';
+        }
+        if (msgEl) msgEl.textContent = message;
+      }
+
+      function initRow(row) {
+        const cells = row.querySelectorAll('.session-cell');
+        cells.forEach(cell => {
+          const chk = cell.querySelector('input[type="checkbox"]');
+          chk.addEventListener('click', () => {
+            if (!chk.checked) {
+              chk.dataset.participated = 'false';
+              cell.classList.remove('participated');
+            }
+            updateRowTotals(row);
+          });
+          cell.addEventListener('dblclick', () => {
+            chk.checked = true;
+            chk.dataset.participated = 'true';
+            cell.classList.add('participated');
+            updateRowTotals(row);
+          });
+        });
+        updateRowTotals(row);
+      }
+
+      function attachHandlers() {
+        const rows = document.querySelectorAll('#attendance-body tr');
+        rows.forEach(initRow);
+      }
+
+      function createSessionCell() {
+        const td = document.createElement('td');
+        td.className = 'center session-cell';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.setAttribute('data-type', 'session');
+        td.appendChild(input);
+        return td;
+      }
+
+      function addStudentRow(student) {
+        const tbody = document.getElementById('attendance-body');
+        if (!tbody) return;
+        // Avoid duplicates by studentId
+        if (tbody.querySelector(`tr[data-student-id="${student.studentId}"]`)) return;
+        const tr = document.createElement('tr');
+        tr.dataset.studentId = student.studentId;
+        tr.innerHTML = `
+          <td>${student.studentId}</td>
+          <td>${student.lastName}</td>
+          <td>${student.firstName}</td>
+          <td>${student.course || 'CS101'}</td>
+        `;
+        for (let i = 0; i < 6; i++) tr.appendChild(createSessionCell());
+        const absTd = document.createElement('td');
+        absTd.className = 'totals absences center';
+        absTd.textContent = '0 Abs';
+        const parTd = document.createElement('td');
+        parTd.className = 'totals participation center';
+        parTd.textContent = '0 Par';
+        const msgTd = document.createElement('td');
+        msgTd.className = 'center message';
+        msgTd.textContent = '—';
+        tr.appendChild(absTd);
+        tr.appendChild(parTd);
+        tr.appendChild(msgTd);
+        tbody.appendChild(tr);
+        initRow(tr);
+      }
+
+      function loadStudentsFromStorage() {
+        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        students.forEach(addStudentRow);
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        attachHandlers();
+        loadStudentsFromStorage();
+        // Listen for real-time additions from the Add Student page
+        try {
+          const channel = new BroadcastChannel('student_updates');
+          channel.onmessage = (e) => {
+            if (e.data && e.data.type === 'student_added') {
+              addStudentRow(e.data.payload);
+            }
+          };
+        } catch (_) {
+          // BroadcastChannel may not be available under file://; storage fallback is already handled
+        }
+
+        // Report button
+        const btn = document.getElementById('showReportBtn');
+        const section = document.getElementById('reportSection');
+        const list = document.getElementById('reportList');
+
+        function generateReport() {
+          list.innerHTML = '';
+          const rows = document.querySelectorAll('#attendance-body tr');
+          rows.forEach(row => {
+            const id = row.querySelector('td:nth-child(1)')?.textContent.trim() || '';
+            const last = row.querySelector('td:nth-child(2)')?.textContent.trim() || '';
+            const first = row.querySelector('td:nth-child(3)')?.textContent.trim() || '';
+            const abs = row.querySelector('.absences')?.textContent.trim() || '0 Abs';
+            const par = row.querySelector('.participation')?.textContent.trim() || '0 Par';
+            const msg = row.querySelector('.message')?.textContent.trim() || '';
+            const li = document.createElement('li');
+            li.textContent = `${last} ${first} (${id}) — ${abs}, ${par} — ${msg}`;
+            list.appendChild(li);
+          });
+        }
+
+        function computeStats() {
+          const rows = document.querySelectorAll('#attendance-body tr');
+          const totalStudents = rows.length;
+          let presentStudents = 0;
+          let participatedStudents = 0;
+          rows.forEach(row => {
+            const sessions = row.querySelectorAll('input[data-type="session"]');
+            const presentCount = Array.from(sessions).filter(c => c.checked).length;
+            const participateCount = Array.from(sessions).filter(c => c.dataset.participated === 'true').length;
+            if (presentCount > 0) presentStudents += 1;
+            if (participateCount > 0) participatedStudents += 1;
+          });
+          return { totalStudents, presentStudents, participatedStudents };
+        }
+
+        btn.addEventListener('click', () => {
+          const stats = computeStats();
+          localStorage.setItem('attendance_report', JSON.stringify(stats));
+          // Also rebuild inline report for convenience
+          generateReport();
+          section.removeAttribute('hidden');
+          // Navigate to dedicated reports page
+          window.location.href = 'reports.html';
+        });
+      });
+    </script>
+  </body>
+</html>

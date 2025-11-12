@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance Reports</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; }
+      nav {
+        width: 100vw;
+        height: 70px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #223656;
+        color: #fff;
+        padding-inline: 20px;
+      }
+      .left img { border-radius: 50%; height: 50px; width: 50px; }
+      .right ul { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
+      .right a { color: #fff; text-decoration: none; }
+
+      .container { max-width: 760px; margin: 24px auto; padding: 20px; }
+      h1 { margin: 0 0 12px; font-size: 22px; }
+      .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      .card {
+        border: 1px solid #d0d7de; border-radius: 10px; padding: 16px; background: #f8fafc;
+      }
+      .card h2 { font-size: 14px; margin: 0 0 8px; color: #223656; }
+      .value { font-size: 26px; font-weight: 600; }
+      .note { margin-top: 14px; color: #666; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="left">
+        <img src="https://scontent.falg1-2.fna.fbcdn.net/v/t39.30808-6/450160642_446636948221828_7355207663232850990_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeFSvJKo3TCcJtv0vjq7Nzj8Es_e8psi6NoSz97ymyLo2kfVK2JW4c-bb9GVbik3VqLKlGTWTpHtp4b1Sf_IGOYV&_nc_ohc=ANJUCurMxvYQ7kNvwGHLoW0&_nc_oc=AdlG-az1k4UggVUepUnkJbCfz5kXY_S5fg-O6P8esl4QhHLfxf5YgWy0EhuLRIXQbRk&_nc_zt=23&_nc_ht=scontent.falg1-2.fna&_nc_gid=WwKWxqQFBA5mD9joZ48f5g&oh=00_AfhaodpossUkjHy2g63naz9OPWW6A5gunNUJSGq32aoLQw&oe=6917DCBA" alt="Logo-Faculty" />
+      </div>
+      <div class="right">
+        <ul>
+          <li><a href="home.html">Home</a></li>
+          <li><a href="attendance.html">Attendance List</a></li>
+          <li><a href="add.html">Add Student</a></li>
+          <li><a href="reports.html">Reports</a></li>
+          <li><a href="#">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="container">
+      <h1>Attendance Report</h1>
+      <div class="cards">
+        <div class="card">
+          <h2>Total Students</h2>
+          <div id="totalStudents" class="value">0</div>
+        </div>
+        <div class="card">
+          <h2>Marked Present (any session)</h2>
+          <div id="presentStudents" class="value">0</div>
+        </div>
+        <div class="card">
+          <h2>Marked Participated (any session)</h2>
+          <div id="participatedStudents" class="value">0</div>
+        </div>
+      </div>
+      <p class="note" id="reportNote"></p>
+
+      <section class="chart-section">
+        <h2 style="font-size:16px; margin: 18px 0 8px; color:#223656;">Chart</h2>
+        <canvas id="reportChart" width="720" height="360" aria-label="Attendance chart"></canvas>
+      </section>
+    </main>
+
+    <script>
+      function renderReport() {
+        const report = JSON.parse(localStorage.getItem('attendance_report') || 'null');
+        const totalEl = document.getElementById('totalStudents');
+        const presentEl = document.getElementById('presentStudents');
+        const partEl = document.getElementById('participatedStudents');
+        const noteEl = document.getElementById('reportNote');
+        if (!report) {
+          noteEl.textContent = 'No report found. Open Attendance and click "Show Report" to generate stats.';
+          drawChart({ totalStudents: 0, presentStudents: 0, participatedStudents: 0 });
+          return;
+        }
+        totalEl.textContent = report.totalStudents ?? 0;
+        presentEl.textContent = report.presentStudents ?? 0;
+        partEl.textContent = report.participatedStudents ?? 0;
+        noteEl.textContent = 'Stats generated from current table state.';
+        drawChart(report);
+      }
+      document.addEventListener('DOMContentLoaded', renderReport);
+
+      function drawChart(report) {
+        const canvas = document.getElementById('reportChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        const data = [
+          { label: 'Total', value: report.totalStudents || 0, color: '#9aa5b1' },
+          { label: 'Present', value: report.presentStudents || 0, color: '#1a7f37' },
+          { label: 'Participated', value: report.participatedStudents || 0, color: '#223656' }
+        ];
+
+        const maxVal = Math.max(1, ...data.map(d => d.value));
+        const padL = 50, padR = 20, padT = 30, padB = 50;
+        const chartW = W - padL - padR;
+        const chartH = H - padT - padB;
+
+        // Axes
+        ctx.strokeStyle = '#c7cdd6';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padL, padT);
+        ctx.lineTo(padL, padT + chartH);
+        ctx.lineTo(padL + chartW, padT + chartH);
+        ctx.stroke();
+
+        // Grid lines and labels (0, 25%, 50%, 75%, 100%)
+        ctx.fillStyle = '#777';
+        ctx.font = '12px system-ui';
+        for (let i = 0; i <= 4; i++) {
+          const y = padT + chartH - (i / 4) * chartH;
+          const val = Math.round((i / 4) * maxVal);
+          ctx.strokeStyle = '#eef2f7';
+          ctx.beginPath();
+          ctx.moveTo(padL, y);
+          ctx.lineTo(padL + chartW, y);
+          ctx.stroke();
+          ctx.fillStyle = '#555';
+          ctx.fillText(String(val), 10, y + 4);
+        }
+
+        // Bars
+        const barSpace = chartW / data.length;
+        const barW = Math.min(120, barSpace * 0.5);
+        data.forEach((d, i) => {
+          const xCenter = padL + barSpace * i + barSpace / 2;
+          const barH = (d.value / maxVal) * chartH;
+          const x = xCenter - barW / 2;
+          const y = padT + chartH - barH;
+          ctx.fillStyle = d.color;
+          ctx.fillRect(x, y, barW, barH);
+
+          // Value label
+          ctx.fillStyle = '#222';
+          ctx.font = '13px system-ui';
+          ctx.fillText(String(d.value), x + barW / 2 - ctx.measureText(String(d.value)).width / 2, y - 6);
+
+          // Category label
+          ctx.fillStyle = '#223656';
+          ctx.font = '12px system-ui';
+          const labelW = ctx.measureText(d.label).width;
+          ctx.fillText(d.label, x + barW / 2 - labelW / 2, padT + chartH + 20);
+        });
+      }
+    </script>
+  </body>
+  </html>

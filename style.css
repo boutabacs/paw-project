@@ -1,0 +1,26 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  list-style-type: none;
+  text-decoration: none;
+}
+nav {
+  width: 100vw;
+  height: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #223656;
+  color: #fff;
+  padding-inline: 20px;
+}
+.left img {
+  border-radius: 50%;
+  height: 50px;
+  width: 50px;
+}
+.right ul {
+  display: flex;
+  gap: 20px;
+}
