@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Attendance List</title>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
       * {
         margin: 0;
         padding: 0;
@@ -12,13 +13,18 @@
         list-style-type: none;
         text-decoration: none;
       }
+      body {
+        font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, sans-serif;
+        overflow-x: hidden;
+      }
       nav {
         width: 100vw;
         height: 70px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background-color: #223656;
+        background-color: #1e90ff;
         color: #fff;
         padding-inline: 20px;
       }
@@ -30,12 +36,13 @@
       .right ul {
         display: flex;
         gap: 20px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
       }
-
-      body {
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
-          Arial, sans-serif;
-        color: #222;
+      .right a {
+        color: #fff;
+        text-decoration: none;
       }
       h1 {
         margin: 0 0 16px;
@@ -116,13 +123,73 @@
       tbody tr.abs-high {
         background: #ffd6d6; /* red */
       }
+      /* Hover highlight via jQuery */
+      tbody tr.hovered {
+        outline: 2px solid #4c82f7;
+        outline-offset: -2px;
+      }
+      /* Exercise 6: animation class for excellent students */
+      tbody tr.excellent-pulse {
+        animation: pulseBg 1.2s ease-in-out 2;
+      }
+      @keyframes pulseBg {
+        0% {
+          background-color: #e6f4ea;
+        }
+        50% {
+          background-color: #c8efd3;
+        }
+        100% {
+          background-color: #e6f4ea;
+        }
+      }
+      /* Smooth background transition for gradual color change */
+      tbody tr {
+        transition: background-color 600ms ease-in-out, outline-color 300ms ease;
+      }
+      tbody tr.excellent-final {
+        background-color: #c8efd3; /* soft green highlight */
+      }
+      /* Modal message box styles */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .modal {
+        background: #fff;
+        border-radius: 8px;
+        padding: 16px;
+        width: min(420px, 90vw);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      .modal h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+      .modal .actions {
+        text-align: right;
+        margin-top: 12px;
+      }
+      .modal .actions button {
+        background: #223656;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
     <nav>
       <div class="left">
         <img
-          src="https://scontent.falg1-2.fna.fbcdn.net/v/t39.30808-6/450160642_446636948221828_7355207663232850990_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeFSvJKo3TCcJtv0vjq7Nzj8Es_e8psi6NoSz97ymyLo2kfVK2JW4c-bb9GVbik3VqLKlGTWTpHtp4b1Sf_IGOYV&_nc_ohc=ANJUCurMxvYQ7kNvwGHLoW0&_nc_oc=AdlG-az1k4UggVUepUnkJbCfz5kXY_S5fg-O6P8esl4QhHLfxf5YgWy0EhuLRIXQbRk&_nc_zt=23&_nc_ht=scontent.falg1-2.fna&_nc_gid=WwKWxqQFBA5mD9joZ48f5g&oh=00_AfhaodpossUkjHy2g63naz9OPWW6A5gunNUJSGq32aoLQw&oe=6917DCBA"
+          src="https://scontent.faae2-3.fna.fbcdn.net/v/t39.30808-6/450160642_446636948221828_7355207663232850990_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFSvJKo3TCcJtv0vjq7Nzj8Es_e8psi6NoSz97ymyLo2kfVK2JW4c-bb9GVbik3VqLKlGTWTpHtp4b1Sf_IGOYV&_nc_ohc=_AYGKz3aLQkQ7kNvwHqwr4g&_nc_oc=AdkVfnNVP-LRRs85_pL0-NuCRN23zD1EMAyvdcw0GAN7mzlkyN41VlA4wU4wbbHsB-s&_nc_zt=23&_nc_ht=scontent.faae2-3.fna&_nc_gid=_vhrljlaLtRS0YD923HWeg&oh=00_AfgkeT-glvpSDA_qIIHLeRmQtiayqoQ_pDcna_tQXR0MFg&oe=69250BBA"
           alt="Logo-Faculty"
         />
       </div>
@@ -137,133 +204,182 @@
       </div>
     </nav>
     <div class="container">
-    <h1>Student Attendance</h1>
-    <button id="showReportBtn" class="report-btn">Show Report</button>
-    <table aria-label="Student attendance list">
-      <caption>
-        Each row contains the information of one student.
-      </caption>
-      <thead>
-        <tr>
-          <th>Student ID</th>
-          <th>Last Name</th>
-          <th>First Name</th>
-          <th>Course</th>
-          <th class="center">S1</th>
-          <th class="center">S2</th>
-          <th class="center">S3</th>
-          <th class="center">S4</th>
-          <th class="center">S5</th>
-          <th class="center">S6</th>
-          <th>Absences</th>
-          <th>Participation</th>
-          <th>Message</th>
-        </tr>
-      </thead>
-      <tbody id="attendance-body">
-        <tr>
-          <td>2025001</td>
-          <td>Ahmed</td>
-          <td>Sara</td>
-          <td>CS101</td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="totals absences center">0 Abs</td>
-          <td class="totals participation center">0 Par</td>
-          <td class="center message">—</td>
-        </tr>
-        <tr>
-          <td>2025002</td>
-          <td>Yacine</td>
-          <td>Ali</td>
-          <td>CS101</td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
-          <td class="totals absences center">0 Abs</td>
-          <td class="totals participation center">0 Par</td>
-          <td class="center message">Great participation</td>
-        </tr>
-        <tr>
-          <td>2025003</td>
-          <td>Houcine</td>
-          <td>Rania</td>
-          <td>CS101</td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" checked /></td>
-          <td class="center session-cell"><input type="checkbox" data-type="session" /></td>
-          <td class="totals absences center">0 Abs</td>
-          <td class="totals participation center">0 Par</td>
-          <td class="center message">Needs improvement</td>
-        </tr>
-      </tbody>
-    </table>
-    <section id="reportSection" hidden>
-      <h2>Attendance Report</h2>
-      <ul id="reportList"></ul>
-    </section>
+      <h1>Student Attendance</h1>
+      <button id="showReportBtn" class="report-btn">Show Report</button>
+      <button
+        id="highlightExcellentBtn"
+        class="report-btn"
+        style="background: #2a7f2a"
+      >
+        Highlight Excellent Students
+      </button>
+      <button
+        id="resetColorsBtn"
+        class="report-btn"
+        style="background: #6b7280"
+      >
+        Reset Colors
+      </button>
+      <div
+        class="search-wrap"
+        style="
+          margin: 10px 0 16px;
+          display: flex;
+          gap: 10px;
+          align-items: center;
+        "
+      >
+        <label for="searchNameInput" style="font-weight: 600"
+          >Search by Name</label
+        >
+        <input
+          id="searchNameInput"
+          type="text"
+          placeholder="Type first or last name"
+          style="
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+          "
+        />
+      </div>
+      <div
+        class="sort-wrap"
+        style="margin: 0 0 16px; display: flex; gap: 10px; flex-wrap: wrap"
+      >
+        <button
+          id="sortAbsAscBtn"
+          class="report-btn"
+          style="background: #2563eb"
+        >
+          Sort by Absences (Ascending)
+        </button>
+        <button
+          id="sortParDescBtn"
+          class="report-btn"
+          style="background: #9333ea"
+        >
+          Sort by Participation (Descending)
+        </button>
+        <button
+          id="resetSortBtn"
+          class="report-btn"
+          style="background: #6b7280"
+        >
+          Reset Sort
+        </button>
+      </div>
+      <table aria-label="Student attendance list">
+        <caption>
+          Each row contains the information of one student.
+        </caption>
+        <thead>
+          <tr>
+            <th>Student ID</th>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Course</th>
+            <th class="center">S1</th>
+            <th class="center">S2</th>
+            <th class="center">S3</th>
+            <th class="center">S4</th>
+            <th class="center">S5</th>
+            <th class="center">S6</th>
+            <th>Absences</th>
+            <th>Participation</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody id="attendance-body"></tbody>
+      </table>
+      <div
+        id="sortStatus"
+        class="sort-status"
+        aria-live="polite"
+        style="margin: 8px 0 12px; font-size: 0.95rem; color: #374151"
+      >
+        Currently sorted by original order
+      </div>
+      <section id="reportSection" hidden>
+        <h2>Attendance Report</h2>
+        <ul id="reportList"></ul>
+      </section>
+      <!-- Modal shown when clicking a row -->
+      <div
+        id="rowMessageModal"
+        class="modal-overlay"
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="modal">
+          <h3>Student Details</h3>
+          <p id="modalStudentName">Full name</p>
+          <p id="modalAbsences">Absences: 0</p>
+          <div class="actions"><button id="closeModalBtn">Close</button></div>
+        </div>
+      </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
       // Single checkbox per session: click = presence; double-click = presence + participation
       function updateRowTotals(row) {
-        const sessionChecks = row.querySelectorAll('input[data-type="session"]');
-        const absEl = row.querySelector('.absences');
-        const parEl = row.querySelector('.participation');
-        const msgEl = row.querySelector('.message');
-        const presentCount = Array.from(sessionChecks).filter(c => c.checked).length;
-        const participateCount = Array.from(sessionChecks).filter(c => c.dataset.participated === 'true').length;
+        const sessionChecks = row.querySelectorAll(
+          'input[data-type="session"]'
+        );
+        const absEl = row.querySelector(".absences");
+        const parEl = row.querySelector(".participation");
+        const msgEl = row.querySelector(".message");
+        const presentCount = Array.from(sessionChecks).filter(
+          (c) => c.checked
+        ).length;
+        const participateCount = Array.from(sessionChecks).filter(
+          (c) => c.dataset.participated === "true"
+        ).length;
         const totalSessions = sessionChecks.length; // 6
         const absences = totalSessions - presentCount;
         if (absEl) absEl.textContent = `${absences} Abs`;
         if (parEl) parEl.textContent = `${participateCount} Par`;
 
         // Apply row highlight based on absences
-        row.classList.remove('abs-low', 'abs-mid', 'abs-high');
+        row.classList.remove("abs-low", "abs-mid", "abs-high");
         if (absences < 3) {
-          row.classList.add('abs-low');
+          row.classList.add("abs-low");
         } else if (absences <= 4) {
-          row.classList.add('abs-mid');
+          row.classList.add("abs-mid");
         } else {
-          row.classList.add('abs-high');
+          row.classList.add("abs-high");
         }
 
         // Compose message according to rules
-        let message = '';
+        let message = "";
         if (absences >= 5) {
-          message = 'Excluded – too many absences – You need to participate more';
+          message =
+            "Excluded – too many absences – You need to participate more";
         } else if (absences < 3 && participateCount >= 4) {
-          message = 'Good attendance – Excellent participation';
+          message = "Good attendance – Excellent participation";
         } else {
-          message = 'Warning – attendance low – You need to participate more';
+          message = "Warning – attendance low – You need to participate more";
         }
         if (msgEl) msgEl.textContent = message;
       }
 
       function initRow(row) {
-        const cells = row.querySelectorAll('.session-cell');
-        cells.forEach(cell => {
+        const cells = row.querySelectorAll(".session-cell");
+        cells.forEach((cell) => {
           const chk = cell.querySelector('input[type="checkbox"]');
-          chk.addEventListener('click', () => {
+          chk.addEventListener("click", () => {
             if (!chk.checked) {
-              chk.dataset.participated = 'false';
-              cell.classList.remove('participated');
+              chk.dataset.participated = "false";
+              cell.classList.remove("participated");
             }
             updateRowTotals(row);
           });
-          cell.addEventListener('dblclick', () => {
+          cell.addEventListener("dblclick", () => {
             chk.checked = true;
-            chk.dataset.participated = 'true';
-            cell.classList.add('participated');
+            chk.dataset.participated = "true";
+            cell.classList.add("participated");
             updateRowTotals(row);
           });
         });
@@ -271,43 +387,53 @@
       }
 
       function attachHandlers() {
-        const rows = document.querySelectorAll('#attendance-body tr');
+        const rows = document.querySelectorAll("#attendance-body tr");
+        rows.forEach((row, idx) => {
+          if (!row.dataset.originalIndex) {
+            row.dataset.originalIndex = String(idx);
+          }
+        });
         rows.forEach(initRow);
       }
 
       function createSessionCell() {
-        const td = document.createElement('td');
-        td.className = 'center session-cell';
-        const input = document.createElement('input');
-        input.type = 'checkbox';
-        input.setAttribute('data-type', 'session');
+        const td = document.createElement("td");
+        td.className = "center session-cell";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.setAttribute("data-type", "session");
         td.appendChild(input);
         return td;
       }
 
       function addStudentRow(student) {
-        const tbody = document.getElementById('attendance-body');
+        const tbody = document.getElementById("attendance-body");
         if (!tbody) return;
         // Avoid duplicates by studentId
-        if (tbody.querySelector(`tr[data-student-id="${student.studentId}"]`)) return;
-        const tr = document.createElement('tr');
+        if (tbody.querySelector(`tr[data-student-id="${student.studentId}"]`))
+          return;
+        const tr = document.createElement("tr");
         tr.dataset.studentId = student.studentId;
+        // assign original index based on current count
+        tr.dataset.originalIndex = String(
+          document.querySelectorAll("#attendance-body tr").length
+        );
         tr.innerHTML = `
           <td>${student.studentId}</td>
           <td>${student.lastName}</td>
           <td>${student.firstName}</td>
-          <td>${student.course || 'CS101'}</td>
+          <td>${student.course || "CS101"}</td>
         `;
         for (let i = 0; i < 6; i++) tr.appendChild(createSessionCell());
-        const absTd = document.createElement('td');
-        absTd.className = 'totals absences center';
-        absTd.textContent = '0 Abs';
-        const parTd = document.createElement('td');
-        parTd.className = 'totals participation center';
-        parTd.textContent = '0 Par';
-        const msgTd = document.createElement('td');
-        msgTd.className = 'center message';
-        msgTd.textContent = '—';
+        const absTd = document.createElement("td");
+        absTd.className = "totals absences center";
+        absTd.textContent = "0 Abs";
+        const parTd = document.createElement("td");
+        parTd.className = "totals participation center";
+        parTd.textContent = "0 Par";
+        const msgTd = document.createElement("td");
+        msgTd.className = "center message";
+        msgTd.textContent = "—";
         tr.appendChild(absTd);
         tr.appendChild(parTd);
         tr.appendChild(msgTd);
@@ -316,18 +442,32 @@
       }
 
       function loadStudentsFromStorage() {
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        const students = JSON.parse(localStorage.getItem("students") || "[]");
         students.forEach(addStudentRow);
       }
 
-      document.addEventListener('DOMContentLoaded', () => {
+      async function loadStudentsFromServer() {
+        try {
+          const res = await fetch("/students.json", { cache: "no-store" });
+          if (!res.ok) throw new Error("No server data");
+          const students = await res.json();
+          if (Array.isArray(students)) {
+            students.forEach(addStudentRow);
+          }
+        } catch (err) {
+          // fallback to localStorage if server unavailable or file missing
+          loadStudentsFromStorage();
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
         attachHandlers();
-        loadStudentsFromStorage();
+        loadStudentsFromServer();
         // Listen for real-time additions from the Add Student page
         try {
-          const channel = new BroadcastChannel('student_updates');
+          const channel = new BroadcastChannel("student_updates");
           channel.onmessage = (e) => {
-            if (e.data && e.data.type === 'student_added') {
+            if (e.data && e.data.type === "student_added") {
               addStudentRow(e.data.payload);
             }
           };
@@ -336,49 +476,191 @@
         }
 
         // Report button
-        const btn = document.getElementById('showReportBtn');
-        const section = document.getElementById('reportSection');
-        const list = document.getElementById('reportList');
+        const btn = document.getElementById("showReportBtn");
+        const section = document.getElementById("reportSection");
+        const list = document.getElementById("reportList");
 
         function generateReport() {
-          list.innerHTML = '';
-          const rows = document.querySelectorAll('#attendance-body tr');
-          rows.forEach(row => {
-            const id = row.querySelector('td:nth-child(1)')?.textContent.trim() || '';
-            const last = row.querySelector('td:nth-child(2)')?.textContent.trim() || '';
-            const first = row.querySelector('td:nth-child(3)')?.textContent.trim() || '';
-            const abs = row.querySelector('.absences')?.textContent.trim() || '0 Abs';
-            const par = row.querySelector('.participation')?.textContent.trim() || '0 Par';
-            const msg = row.querySelector('.message')?.textContent.trim() || '';
-            const li = document.createElement('li');
+          list.innerHTML = "";
+          const rows = document.querySelectorAll("#attendance-body tr");
+          rows.forEach((row) => {
+            const id =
+              row.querySelector("td:nth-child(1)")?.textContent.trim() || "";
+            const last =
+              row.querySelector("td:nth-child(2)")?.textContent.trim() || "";
+            const first =
+              row.querySelector("td:nth-child(3)")?.textContent.trim() || "";
+            const abs =
+              row.querySelector(".absences")?.textContent.trim() || "0 Abs";
+            const par =
+              row.querySelector(".participation")?.textContent.trim() ||
+              "0 Par";
+            const msg = row.querySelector(".message")?.textContent.trim() || "";
+            const li = document.createElement("li");
             li.textContent = `${last} ${first} (${id}) — ${abs}, ${par} — ${msg}`;
             list.appendChild(li);
           });
         }
 
         function computeStats() {
-          const rows = document.querySelectorAll('#attendance-body tr');
+          const rows = document.querySelectorAll("#attendance-body tr");
           const totalStudents = rows.length;
           let presentStudents = 0;
           let participatedStudents = 0;
-          rows.forEach(row => {
+          rows.forEach((row) => {
             const sessions = row.querySelectorAll('input[data-type="session"]');
-            const presentCount = Array.from(sessions).filter(c => c.checked).length;
-            const participateCount = Array.from(sessions).filter(c => c.dataset.participated === 'true').length;
+            const presentCount = Array.from(sessions).filter(
+              (c) => c.checked
+            ).length;
+            const participateCount = Array.from(sessions).filter(
+              (c) => c.dataset.participated === "true"
+            ).length;
             if (presentCount > 0) presentStudents += 1;
             if (participateCount > 0) participatedStudents += 1;
           });
           return { totalStudents, presentStudents, participatedStudents };
         }
 
-        btn.addEventListener('click', () => {
+        btn.addEventListener("click", () => {
           const stats = computeStats();
-          localStorage.setItem('attendance_report', JSON.stringify(stats));
+          localStorage.setItem("attendance_report", JSON.stringify(stats));
           // Also rebuild inline report for convenience
           generateReport();
-          section.removeAttribute('hidden');
+          section.removeAttribute("hidden");
           // Navigate to dedicated reports page
-          window.location.href = 'reports.html';
+          window.location.href = "reports.html";
+        });
+
+        // jQuery interactions (Exercise 5): hover highlight and click message
+        $(document).on("mouseenter", "#attendance-body tr", function () {
+          $(this).addClass("hovered");
+        });
+        $(document).on("mouseleave", "#attendance-body tr", function () {
+          $(this).removeClass("hovered");
+        });
+        $(document).on("click", "#attendance-body tr", function (e) {
+          // Ignore clicks originating from checkboxes or inside session cells
+          if (
+            $(e.target).is('input[type="checkbox"]') ||
+            $(e.target).closest(".session-cell").length
+          ) {
+            return;
+          }
+          const $row = $(this);
+          const last = $row.children().eq(1).text().trim();
+          const first = $row.children().eq(2).text().trim();
+          const absText = $row.find(".absences").text().trim();
+          const abs = parseInt(absText, 10) || 0;
+          const fullName = `${first} ${last}`;
+          $("#modalStudentName").text(fullName);
+          $("#modalAbsences").text(`Absences: ${abs}`);
+          $("#rowMessageModal")
+            .css("display", "flex")
+            .attr("aria-hidden", "false");
+        });
+
+        // Prevent bubbling from checkboxes to row click
+        $(document).on(
+          "click",
+          '#attendance-body input[type="checkbox"]',
+          function (e) {
+            e.stopPropagation();
+          }
+        );
+
+        // Search by Name: filter rows by first or last name
+        $("#searchNameInput").on("keyup change", function () {
+          const q = $(this).val().toString().trim().toLowerCase();
+          const $rows = $("#attendance-body tr");
+          if (!q) {
+            $rows.show();
+            return;
+          }
+          const $match = $rows.filter(function () {
+            const last = $(this).children().eq(1).text().toLowerCase();
+            const first = $(this).children().eq(2).text().toLowerCase();
+            return last.includes(q) || first.includes(q);
+          });
+          $rows.hide();
+          $match.show();
+        });
+
+        // Exercise 6: Highlight Excellent Students (< 3 absences) and reset
+        $("#highlightExcellentBtn").on("click", function () {
+          const $excellent = $("#attendance-body tr").filter(function () {
+            const absText = $(this).find(".absences").text().trim();
+            const abs = parseInt(absText, 10) || 0;
+            return abs < 3;
+          });
+          // Apply a gradual color change via CSS transition
+          $excellent.removeClass("excellent-pulse").addClass("excellent-final");
+        });
+        $("#resetColorsBtn").on("click", function () {
+          const $rows = $("#attendance-body tr");
+          $rows
+            .removeClass("excellent-final excellent-pulse")
+            .stop(true, true)
+            .css("opacity", "");
+        });
+
+        // Modal dismissal handlers
+        $("#closeModalBtn").on("click", function () {
+          $("#rowMessageModal").hide().attr("aria-hidden", "true");
+        });
+        $("#rowMessageModal").on("click", function (e) {
+          if (e.target.id === "rowMessageModal") {
+            $(this).hide().attr("aria-hidden", "true");
+          }
+        });
+        $(document).on("keydown", function (e) {
+          if (e.key === "Escape") {
+            $("#rowMessageModal").hide().attr("aria-hidden", "true");
+          }
+        });
+
+        // Sorting buttons
+        $("#sortAbsAscBtn").on("click", function () {
+          const $tbody = $("#attendance-body");
+          const rows = $tbody.children("tr").get();
+          rows.sort(function (a, b) {
+            const aAbs = parseInt($(a).find(".absences").text(), 10) || 0;
+            const bAbs = parseInt($(b).find(".absences").text(), 10) || 0;
+            return aAbs - bAbs; // ascending
+          });
+          $.each(rows, function (_, row) {
+            $tbody.append(row);
+          });
+          $("#sortStatus").text("Currently sorted by absences (ascending)");
+        });
+
+        $("#sortParDescBtn").on("click", function () {
+          const $tbody = $("#attendance-body");
+          const rows = $tbody.children("tr").get();
+          rows.sort(function (a, b) {
+            const aPar = parseInt($(a).find(".participation").text(), 10) || 0;
+            const bPar = parseInt($(b).find(".participation").text(), 10) || 0;
+            return bPar - aPar; // descending
+          });
+          $.each(rows, function (_, row) {
+            $tbody.append(row);
+          });
+          $("#sortStatus").text(
+            "Currently sorted by participation (descending)"
+          );
+        });
+
+        $("#resetSortBtn").on("click", function () {
+          const $tbody = $("#attendance-body");
+          const rows = $tbody.children("tr").get();
+          rows.sort(function (a, b) {
+            const ai = parseInt(a.dataset.originalIndex || "0", 10);
+            const bi = parseInt(b.dataset.originalIndex || "0", 10);
+            return ai - bi; // restore original order
+          });
+          $.each(rows, function (_, row) {
+            $tbody.append(row);
+          });
+          $("#sortStatus").text("Currently sorted by original order");
         });
       });
     </script>

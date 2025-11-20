@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
       * {
         margin: 0;
         padding: 0;
@@ -12,13 +13,18 @@
         list-style-type: none;
         text-decoration: none;
       }
+      body {
+        font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, sans-serif;
+        overflow-x: hidden;
+      }
       nav {
         width: 100vw;
         height: 70px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background-color: #223656;
+        background-color: #1e90ff;
         color: #fff;
         padding-inline: 20px;
       }
@@ -30,6 +36,13 @@
       .right ul {
         display: flex;
         gap: 20px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .right a {
+        color: #fff;
+        text-decoration: none;
       }
 
       /* Page layout */
@@ -55,7 +68,7 @@
       legend {
         font-weight: 600;
         margin-bottom: 12px;
-        color: #223656;
+        color: #1e90ff;
       }
 
       .grid {
@@ -84,7 +97,7 @@
       }
 
       .error {
-        color: #b00020;
+        color: #004fb0;
         font-size: 12px;
         margin-top: 4px;
         min-height: 16px;
@@ -92,7 +105,7 @@
 
       button[type="submit"] {
         margin-top: 14px;
-        background: #223656;
+        background: #1e90ff;
         color: #fff;
         border: none;
         padding: 10px 18px;
@@ -118,7 +131,7 @@
     <nav>
       <div class="left">
         <img
-          src="https://scontent.falg1-2.fna.fbcdn.net/v/t39.30808-6/450160642_446636948221828_7355207663232850990_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeFSvJKo3TCcJtv0vjq7Nzj8Es_e8psi6NoSz97ymyLo2kfVK2JW4c-bb9GVbik3VqLKlGTWTpHtp4b1Sf_IGOYV&_nc_ohc=ANJUCurMxvYQ7kNvwGHLoW0&_nc_oc=AdlG-az1k4UggVUepUnkJbCfz5kXY_S5fg-O6P8esl4QhHLfxf5YgWy0EhuLRIXQbRk&_nc_zt=23&_nc_ht=scontent.falg1-2.fna&_nc_gid=WwKWxqQFBA5mD9joZ48f5g&oh=00_AfhaodpossUkjHy2g63naz9OPWW6A5gunNUJSGq32aoLQw&oe=6917DCBA"
+          src="https://scontent.faae2-3.fna.fbcdn.net/v/t39.30808-6/450160642_446636948221828_7355207663232850990_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFSvJKo3TCcJtv0vjq7Nzj8Es_e8psi6NoSz97ymyLo2kfVK2JW4c-bb9GVbik3VqLKlGTWTpHtp4b1Sf_IGOYV&_nc_ohc=_AYGKz3aLQkQ7kNvwHqwr4g&_nc_oc=AdkVfnNVP-LRRs85_pL0-NuCRN23zD1EMAyvdcw0GAN7mzlkyN41VlA4wU4wbbHsB-s&_nc_zt=23&_nc_ht=scontent.faae2-3.fna&_nc_gid=_vhrljlaLtRS0YD923HWeg&oh=00_AfgkeT-glvpSDA_qIIHLeRmQtiayqoQ_pDcna_tQXR0MFg&oe=69250BBA"
           alt="Logo-Faculty"
         />
       </div>
@@ -133,7 +146,12 @@
       </div>
     </nav>
     <main class="container">
-      <form id="add-student-form" action="#" method="post" novalidate>
+      <form
+        id="add-student-form"
+        action="add_student.php"
+        method="post"
+        novalidate
+      >
         <fieldset>
           <legend>Add New Student</legend>
           <div class="grid">
@@ -167,6 +185,7 @@
               <p class="error" data-error-for="email"></p>
             </div>
           </div>
+          <input type="hidden" name="course" value="CS101" />
           <button type="submit">Submit</button>
           <p class="hint">All fields are required.</p>
           <output id="formStatus" aria-live="polite"></output>
@@ -235,34 +254,13 @@
       }
 
       form.addEventListener("submit", (e) => {
-        e.preventDefault();
         statusEl.textContent = "";
         const valid = validateForm();
         if (!valid) {
+          e.preventDefault();
           statusEl.textContent = "Please fix the errors and try again.";
           statusEl.style.color = "#b00020";
-          return;
         }
-
-        const data = Object.fromEntries(new FormData(form));
-        // Ensure row has a course to match table structure
-        if (!data.course) data.course = "CS101";
-        const students = JSON.parse(localStorage.getItem("students") || "[]");
-        students.push(data);
-        localStorage.setItem("students", JSON.stringify(students));
-        statusEl.textContent = "Student added. Attendance table updated.";
-        statusEl.style.color = "#1a7f37";
-        console.log("Submitted student:", data);
-
-        // Notify attendance page in real-time
-        try {
-          const channel = new BroadcastChannel("student_updates");
-          channel.postMessage({ type: "student_added", payload: data });
-        } catch (_) {
-          // BroadcastChannel may not be available under file://; localStorage persists the data
-        }
-        form.reset();
-        ["studentId", "lastName", "firstName", "email"].forEach(clearError);
       });
     </script>
   </body>

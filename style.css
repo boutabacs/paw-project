@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
 * {
   margin: 0;
   padding: 0;
@@ -5,13 +6,17 @@
   list-style-type: none;
   text-decoration: none;
 }
+body {
+  font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+}
 nav {
   width: 100vw;
   height: 70px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #223656;
+  background-color: #1e90ff;
   color: #fff;
   padding-inline: 20px;
 }
@@ -23,4 +28,39 @@ nav {
 .right ul {
   display: flex;
   gap: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.right a {
+  color: #fff;
+  text-decoration: none;
+}
+.main {
+  width: 100vw;
+  height: calc(100vh - 70px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("assets/images/cover.jpg");
+  background-size: cover;
+  background-position: center;
+}
+/* Welcome section styling */
+.welcome {
+  text-align: center;
+  background: rgba(224, 242, 254, 0.9); /* bleu très clair */
+  border-radius: 16px;
+  padding: 24px; /* renforce l’effet bulle */
+  box-shadow: 0 10px 24px rgba(30, 144, 255, 0.15);
+}
+.welcome h1 {
+  font-weight: 700;
+  font-size: 2rem;
+  color: #1e90ff; /* bleu clair, pas noir ni gris */
+}
+.welcome p {
+  margin-top: 8px;
+  font-size: 1.05rem;
+  color: #38bdf8; /* cyan clair pour lisibilité */
 }
