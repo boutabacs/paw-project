@@ -1,16 +1,23 @@
 <?php
 require __DIR__ . '/db_connect.php';
 
+$pdo = getDatabaseConnection();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $errors = [];
 $message = '';
-$values = [
-    'fullname' => trim($_POST['fullname'] ?? ''),
-    'matricule' => trim($_POST['matricule'] ?? ''),
-    'group_id' => trim($_POST['group_id'] ?? ''),
-];
+$id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
 
-if ($method === 'POST') {
+if ($id <= 0) {
+    $errors[] = 'Identifiant d’étudiant manquant.';
+}
+
+if ($method === 'POST' && !$errors) {
+    $values = [
+        'fullname' => trim($_POST['fullname'] ?? ''),
+        'matricule' => trim($_POST['matricule'] ?? ''),
+        'group_id' => trim($_POST['group_id'] ?? ''),
+    ];
+
     if ($values['fullname'] === '' || !preg_match('/^[\p{L}\'\- ]+$/u', $values['fullname'])) {
         $errors[] = 'Nom complet invalide.';
     }
@@ -22,27 +29,33 @@ if ($method === 'POST') {
     }
 
     if (!$errors) {
-        try {
-            $pdo = getDatabaseConnection();
-            $stmt = $pdo->prepare('INSERT INTO students (fullname, matricule, group_id) VALUES (:fullname, :matricule, :group_id)');
-            $stmt->execute([
-                ':fullname' => $values['fullname'],
-                ':matricule' => $values['matricule'],
-                ':group_id' => $values['group_id'],
-            ]);
-            $message = 'Étudiant ajouté avec succès.';
-            $values = ['fullname' => '', 'matricule' => '', 'group_id' => ''];
-        } catch (Throwable $e) {
-            $errors[] = 'Erreur lors de l’enregistrement : ' . $e->getMessage();
-        }
+        $stmt = $pdo->prepare('UPDATE students SET fullname = :fullname, matricule = :matricule, group_id = :group_id WHERE id = :id');
+        $stmt->execute([
+            ':fullname' => $values['fullname'],
+            ':matricule' => $values['matricule'],
+            ':group_id' => $values['group_id'],
+            ':id' => $id,
+        ]);
+        $message = 'Étudiant mis à jour.';
     }
+} elseif ($method === 'GET' && !$errors) {
+    $stmt = $pdo->prepare('SELECT fullname, matricule, group_id FROM students WHERE id = :id');
+    $stmt->execute([':id' => $id]);
+    $values = $stmt->fetch();
+    if (!$values) {
+        $errors[] = 'Étudiant introuvable.';
+    }
+}
+
+if (!isset($values)) {
+    $values = ['fullname' => '', 'matricule' => '', 'group_id' => ''];
 }
 ?>
 <!doctype html>
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Ajouter un étudiant</title>
+    <title>Modifier un étudiant</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -87,7 +100,7 @@ if ($method === 'POST') {
 
     <main class="container">
         <section class="card">
-            <h1>Ajouter un étudiant</h1>
+            <h1>Modifier un étudiant</h1>
 
             <?php if ($message !== ''): ?>
                 <p class="status success"><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></p>
@@ -101,24 +114,27 @@ if ($method === 'POST') {
                 </ul>
             <?php endif; ?>
 
-            <form method="post">
-                <label>
-                    Nom complet
-                    <input type="text" name="fullname" value="<?php echo htmlspecialchars($values['fullname'], ENT_QUOTES, 'UTF-8'); ?>" required>
-                </label>
-                <label>
-                    Matricule
-                    <input type="text" name="matricule" value="<?php echo htmlspecialchars($values['matricule'], ENT_QUOTES, 'UTF-8'); ?>" required>
-                </label>
-                <label>
-                    Groupe
-                    <input type="text" name="group_id" value="<?php echo htmlspecialchars($values['group_id'], ENT_QUOTES, 'UTF-8'); ?>" required>
-                </label>
-                <button type="submit">Ajouter</button>
-            </form>
+            <?php if (!$errors || $method === 'POST'): ?>
+                <form method="post">
+                    <input type="hidden" name="id" value="<?php echo htmlspecialchars((string)$id, ENT_QUOTES, 'UTF-8'); ?>">
+                    <label>
+                        Nom complet
+                        <input type="text" name="fullname" value="<?php echo htmlspecialchars($values['fullname'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                    </label>
+                    <label>
+                        Matricule
+                        <input type="text" name="matricule" value="<?php echo htmlspecialchars($values['matricule'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                    </label>
+                    <label>
+                        Groupe
+                        <input type="text" name="group_id" value="<?php echo htmlspecialchars($values['group_id'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                    </label>
+                    <button type="submit">Mettre à jour</button>
+                </form>
+            <?php endif; ?>
 
             <div class="nav-links">
-                <a href="list_students.php">Voir la liste des étudiants</a>
+                <a href="list_students.php">Retour à la liste</a>
             </div>
         </section>
     </main>

@@ -1,40 +1,28 @@
 <?php
 require __DIR__ . '/db_connect.php';
 
+$pdo = getDatabaseConnection();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $errors = [];
 $message = '';
-$values = [
-    'fullname' => trim($_POST['fullname'] ?? ''),
-    'matricule' => trim($_POST['matricule'] ?? ''),
-    'group_id' => trim($_POST['group_id'] ?? ''),
-];
+$id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
 
-if ($method === 'POST') {
-    if ($values['fullname'] === '' || !preg_match('/^[\p{L}\'\- ]+$/u', $values['fullname'])) {
-        $errors[] = 'Nom complet invalide.';
-    }
-    if ($values['matricule'] === '') {
-        $errors[] = 'Le matricule est obligatoire.';
-    }
-    if ($values['group_id'] === '' || !preg_match('/^[A-Za-z0-9_\- ]+$/', $values['group_id'])) {
-        $errors[] = 'Le groupe est invalide.';
-    }
+if ($id <= 0) {
+    $errors[] = 'Identifiant d’étudiant manquant.';
+}
 
-    if (!$errors) {
-        try {
-            $pdo = getDatabaseConnection();
-            $stmt = $pdo->prepare('INSERT INTO students (fullname, matricule, group_id) VALUES (:fullname, :matricule, :group_id)');
-            $stmt->execute([
-                ':fullname' => $values['fullname'],
-                ':matricule' => $values['matricule'],
-                ':group_id' => $values['group_id'],
-            ]);
-            $message = 'Étudiant ajouté avec succès.';
-            $values = ['fullname' => '', 'matricule' => '', 'group_id' => ''];
-        } catch (Throwable $e) {
-            $errors[] = 'Erreur lors de l’enregistrement : ' . $e->getMessage();
-        }
+if ($method === 'POST' && !$errors) {
+    $stmt = $pdo->prepare('DELETE FROM students WHERE id = :id');
+    $stmt->execute([':id' => $id]);
+    $message = 'Étudiant supprimé.';
+}
+
+if ($method === 'GET' && !$errors) {
+    $stmt = $pdo->prepare('SELECT fullname, matricule FROM students WHERE id = :id');
+    $stmt->execute([':id' => $id]);
+    $student = $stmt->fetch();
+    if (!$student) {
+        $errors[] = 'Étudiant introuvable.';
     }
 }
 ?>
@@ -42,7 +30,7 @@ if ($method === 'POST') {
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Ajouter un étudiant</title>
+    <title>Supprimer un étudiant</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -53,14 +41,13 @@ if ($method === 'POST') {
         .left img { border-radius: 50%; height: 50px; width: 50px; }
         .right ul { display: flex; gap: 20px; }
         .right a { color: #fff; }
-        .container { max-width: 820px; margin: 32px auto; padding: 0 20px; }
-        .card { background: #f8fafc; border: 1px solid #d0d7de; border-radius: 16px; padding: 32px; box-shadow: 0 10px 24px rgba(30, 144, 255, 0.08); }
-        h1 { font-size: 1.75rem; color: #1e90ff; margin-bottom: 12px; }
-        form { margin-top: 16px; display: grid; gap: 16px; }
-        label { font-size: 0.95rem; font-weight: 600; color: #1b2a4a; }
-        input { width: 100%; padding: 12px; border: 1px solid #b6c0cf; border-radius: 8px; font-size: 0.95rem; }
-        button { width: fit-content; background: #1e90ff; color: #fff; border: none; padding: 12px 22px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; }
-        button:hover { background: #0f60a6; }
+        .container { max-width: 720px; margin: 32px auto; padding: 0 20px; }
+        .card { background: #fef2f2; border: 1px solid #fecaca; border-radius: 16px; padding: 32px; box-shadow: 0 10px 24px rgba(248, 113, 113, 0.2); }
+        h1 { font-size: 1.75rem; color: #b91c1c; margin-bottom: 12px; }
+        p { margin-top: 12px; line-height: 1.5; }
+        button { background: #dc2626; color: #fff; border: none; padding: 12px 22px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; margin-top: 12px; }
+        button:hover { background: #991b1b; }
+        form { margin-top: 24px; }
         .status { margin-top: 16px; padding: 12px 16px; border-radius: 10px; font-weight: 600; }
         .status.success { background: #dcfce7; color: #166534; border: 1px solid #22c55e; }
         .status.error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
@@ -87,7 +74,7 @@ if ($method === 'POST') {
 
     <main class="container">
         <section class="card">
-            <h1>Ajouter un étudiant</h1>
+            <h1>Supprimer un étudiant</h1>
 
             <?php if ($message !== ''): ?>
                 <p class="status success"><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></p>
@@ -101,24 +88,20 @@ if ($method === 'POST') {
                 </ul>
             <?php endif; ?>
 
-            <form method="post">
-                <label>
-                    Nom complet
-                    <input type="text" name="fullname" value="<?php echo htmlspecialchars($values['fullname'], ENT_QUOTES, 'UTF-8'); ?>" required>
-                </label>
-                <label>
-                    Matricule
-                    <input type="text" name="matricule" value="<?php echo htmlspecialchars($values['matricule'], ENT_QUOTES, 'UTF-8'); ?>" required>
-                </label>
-                <label>
-                    Groupe
-                    <input type="text" name="group_id" value="<?php echo htmlspecialchars($values['group_id'], ENT_QUOTES, 'UTF-8'); ?>" required>
-                </label>
-                <button type="submit">Ajouter</button>
-            </form>
+            <?php if ($method === 'GET' && empty($errors)): ?>
+                <p>
+                    Confirmer la suppression de l’étudiant
+                    <strong><?php echo htmlspecialchars($student['fullname'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                    (matricule <?php echo htmlspecialchars($student['matricule'], ENT_QUOTES, 'UTF-8'); ?>) ?
+                </p>
+                <form method="post">
+                    <input type="hidden" name="id" value="<?php echo htmlspecialchars((string)$id, ENT_QUOTES, 'UTF-8'); ?>">
+                    <button type="submit">Supprimer</button>
+                </form>
+            <?php endif; ?>
 
             <div class="nav-links">
-                <a href="list_students.php">Voir la liste des étudiants</a>
+                <a href="list_students.php">Retour à la liste</a>
             </div>
         </section>
     </main>
